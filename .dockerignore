@@ -1,0 +1,12 @@
+﻿# Root canonical Docker setup
+# Ignore local build output and dependencies
+**/target
+**/.next
+**/node_modules
+**/dist
+.git
+.gitignore
+.idea
+.vscode
+tmp_docx_1
+tmp_docx_1.zip

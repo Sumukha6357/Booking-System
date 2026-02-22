@@ -1,0 +1,12 @@
+﻿[extend]
+useDefault = true
+
+[[rules]]
+id = "jwt-secret"
+description = "JWT secret assignment"
+regex = '''(?i)(jwt_secret|app\\.jwt\\.secret)\\s*[:=]\\s*['\"]?[A-Za-z0-9_\\-]{16,}['\"]?'''
+
+[[rules]]
+id = "webhook-secret"
+description = "Webhook secret assignment"
+regex = '''(?i)(webhook_secret|app\\.webhook\\.secret)\\s*[:=]\\s*['\"]?[A-Za-z0-9_\\-]{12,}['\"]?'''

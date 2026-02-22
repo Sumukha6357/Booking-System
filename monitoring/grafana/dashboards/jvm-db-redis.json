@@ -1,0 +1,9 @@
+﻿{
+  "title": "JVM + Data Stores",
+  "panels": [
+    {"type":"timeseries","title":"Heap / GC"},
+    {"type":"timeseries","title":"Thread Count"},
+    {"type":"timeseries","title":"Postgres Connections"},
+    {"type":"timeseries","title":"Redis Memory / Evictions"}
+  ]
+}

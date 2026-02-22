@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --canvas: #0f1724;
+  --panel: #1a2436;
+  --ink: #e5edf9;
+  --accent: #66c9b9;
+  --border: #26324a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at -20% -10%, rgba(102, 201, 185, 0.15), transparent 60%),
+    radial-gradient(900px 600px at 120% 10%, rgba(79, 116, 193, 0.18), transparent 55%),
+    var(--canvas);
+  color: var(--ink);
+  font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
+}
+
+input,
+button,
+select {
+  font: inherit;
+}
+
+.card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.stagger-in {
+  animation: fade-up 500ms ease both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,8 @@
+api/target/
+web/.next/
+web/node_modules/
+
+.env
+*.log
+*.tmp
+.DS_Store

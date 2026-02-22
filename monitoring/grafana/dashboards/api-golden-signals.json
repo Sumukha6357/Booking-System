@@ -1,0 +1,9 @@
+﻿{
+  "title": "API Golden Signals",
+  "panels": [
+    {"type":"timeseries","title":"Request Rate"},
+    {"type":"timeseries","title":"p95 Latency"},
+    {"type":"timeseries","title":"5xx Error Rate"},
+    {"type":"timeseries","title":"CPU Saturation"}
+  ]
+}

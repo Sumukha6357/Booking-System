@@ -1,0 +1,25 @@
+﻿services:
+  postgres:
+    restart: unless-stopped
+
+  redis:
+    restart: unless-stopped
+
+  flyway:
+    restart: "no"
+
+  api:
+    restart: unless-stopped
+    environment:
+      APP_ENV: prod
+      SPRING_PROFILES_ACTIVE: prod
+      INTEGRATIONS_MODE: ${INTEGRATIONS_MODE}
+      CORS_ALLOWED_ORIGIN: ${WEB_PUBLIC_ORIGIN}
+
+  web:
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT}:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
