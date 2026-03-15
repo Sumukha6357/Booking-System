@@ -2,28 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Outfit:wght@300..900&display=swap');
+
 :root {
-  --canvas: #0f1724;
-  --panel: #1a2436;
-  --ink: #e5edf9;
-  --accent: #66c9b9;
-  --border: #26324a;
+  --canvas: #090e15;
+  --surface-low: #0f141d;
+  --surface-mid: #141b27;
+  --surface-high: #1c2635;
+  --panel: rgba(20, 27, 39, 0.7);
+  --ink: #f0f4f9;
+  --ink-muted: #94a3b8;
+  --accent: #5ef3da;
+  --accent-glow: rgba(94, 243, 218, 0.15);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-bright: rgba(255, 255, 255, 0.15);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
 }
 
 * {
   box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(1200px 600px at -20% -10%, rgba(102, 201, 185, 0.15), transparent 60%),
-    radial-gradient(900px 600px at 120% 10%, rgba(79, 116, 193, 0.18), transparent 55%),
+  background: 
+    radial-gradient(circle at 0% 0%, var(--surface-low) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, var(--surface-low) 0%, transparent 50%),
     var(--canvas);
   color: var(--ink);
-  font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
+  font-family: "Outfit", sans-serif;
 }
+
+h1, h2, h3, .font-display {
+  font-family: "Space Grotesk", sans-serif;
+}
+
 
 input,
 button,
