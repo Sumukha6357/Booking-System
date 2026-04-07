@@ -1,0 +1,8 @@
+{
+  "name": "booking-system",
+  "version": "1.0.0",
+  "description": "Seeder wrapper for Booking System",
+  "scripts": {
+    "seed": "docker compose exec -T postgres psql -U postgres -d booking_db -f /scripts/seed.sql"
+  }
+}

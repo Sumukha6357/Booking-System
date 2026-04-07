@@ -33,4 +33,9 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     );
 
     List<Booking> findByStateAndHoldExpiresAtBefore(BookingState state, Instant now);
+
+    @Query("select b from Booking b where b.userId = :userId and b.tenantId = :tenantId order by b.createdAt desc")
+    List<Booking> findActiveByUserIdAndTenantId(@Param("userId") UUID userId, @Param("tenantId") UUID tenantId);
+
+    List<Booking> findByListingId(UUID listingId);
 }

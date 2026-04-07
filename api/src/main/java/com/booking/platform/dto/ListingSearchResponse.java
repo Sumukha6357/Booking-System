@@ -9,6 +9,9 @@ public record ListingSearchResponse(
     String title,
     String location,
     BigDecimal price,
+    int maxGuests,
+    String amenities,
+    String imageUrls,
     LocalDate from,
     LocalDate to
 ) {

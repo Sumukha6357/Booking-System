@@ -1,0 +1,2 @@
+-- Titanium User Seed (Disabled - Move to scripts/seed.sql and run via npm run seed)
+-- Keep this file to maintain Flyway migration history but no data is added by default.

@@ -49,6 +49,15 @@ public class Booking {
     @Column
     private Instant holdExpiresAt;
 
+    @Column(nullable = false)
+    private int guestCount = 1;
+
+    @Column(length = 1000)
+    private String guestNotes;
+
+    @Column(length = 500)
+    private String specialRequests;
+
     @Version
     private long version;
 

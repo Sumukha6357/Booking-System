@@ -6,6 +6,7 @@ public record AnalyticsResponse(
     double occupancyRate,
     double bookingConversionRate,
     BigDecimal averageBookingValue,
+    BigDecimal totalRevenue,
     double cancellationRate
 ) {
 }

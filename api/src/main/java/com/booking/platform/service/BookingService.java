@@ -6,6 +6,7 @@ import com.booking.platform.domain.BookingState;
 import com.booking.platform.domain.Listing;
 import com.booking.platform.dto.HoldBookingRequest;
 import com.booking.platform.dto.HoldBookingResponse;
+import com.booking.platform.dto.ModifyBookingRequest;
 import com.booking.platform.exception.ConflictException;
 import com.booking.platform.exception.NotFoundException;
 import com.booking.platform.redis.RedisKeys;
@@ -113,7 +114,7 @@ public class BookingService {
     }
 
     @Transactional
-    public Booking cancel(UUID bookingId) {
+    public Booking cancel(UUID bookingId, String reason) {
         UUID tenantId = TenantContext.getRequired();
         Booking booking = getTenantBooking(bookingId);
 
@@ -122,9 +123,77 @@ public class BookingService {
         }
 
         booking.setState(BookingState.CANCELLED);
+        if (reason != null && !reason.isBlank()) {
+            booking.setSpecialRequests("Cancellation reason: " + reason);
+        }
         Booking saved = bookingRepository.save(booking);
         lockService.release(lockKey(saved.getListingId(), saved.getCheckIn().toString(), saved.getCheckOut().toString()));
-        writeAudit(tenantId, "BOOKING_CANCELLED", "bookingId=" + saved.getId());
+        writeAudit(tenantId, "BOOKING_CANCELLED", "bookingId=" + saved.getId() + (reason != null ? ",reason=" + reason : ""));
+        notificationService.bookingUpdated(saved);
+        return saved;
+    }
+
+    @Transactional
+    public Booking modify(UUID bookingId, ModifyBookingRequest request) {
+        UUID tenantId = TenantContext.getRequired();
+        Booking booking = getTenantBooking(bookingId);
+
+        if (booking.getState() != BookingState.HELD && booking.getState() != BookingState.CONFIRMED) {
+            throw new ConflictException("Booking cannot be modified in current state");
+        }
+
+        boolean datesChanged = false;
+        if (request.checkIn() != null && request.checkOut() != null) {
+            if (!request.checkIn().equals(booking.getCheckIn()) || !request.checkOut().equals(booking.getCheckOut())) {
+                List<Booking> overlapping = bookingRepository.findOverlappingBookings(
+                    tenantId,
+                    booking.getListingId(),
+                    request.checkIn(),
+                    request.checkOut(),
+                    List.of(BookingState.HELD, BookingState.CONFIRMED, BookingState.COMPLETED)
+                ).stream().filter(b -> !b.getId().equals(bookingId)).toList();
+                if (!overlapping.isEmpty()) {
+                    throw new ConflictException("New dates are not available");
+                }
+                lockService.release(lockKey(booking.getListingId(), booking.getCheckIn().toString(), booking.getCheckOut().toString()));
+                String newLockKey = lockKey(booking.getListingId(), request.checkIn().toString(), request.checkOut().toString());
+                if (!lockService.acquire(newLockKey, booking.getUserId().toString())) {
+                    throw new ConflictException("Could not reserve new dates");
+                }
+                booking.setCheckIn(request.checkIn());
+                booking.setCheckOut(request.checkOut());
+                datesChanged = true;
+            }
+        }
+
+        if (request.guestCount() != null) {
+            booking.setGuestCount(request.guestCount());
+        }
+        if (request.guestNotes() != null) {
+            booking.setGuestNotes(request.guestNotes());
+        }
+        if (request.specialRequests() != null) {
+            booking.setSpecialRequests(request.specialRequests());
+        }
+
+        Booking saved = bookingRepository.save(booking);
+        writeAudit(tenantId, "BOOKING_MODIFIED", "bookingId=" + saved.getId() + (datesChanged ? ",dates_changed" : ""));
+        notificationService.bookingUpdated(saved);
+        return saved;
+    }
+
+    @Transactional
+    public Booking complete(UUID bookingId) {
+        UUID tenantId = TenantContext.getRequired();
+        Booking booking = getTenantBooking(bookingId);
+
+        if (booking.getState() != BookingState.CONFIRMED) {
+            throw new ConflictException("Only CONFIRMED bookings can be marked as completed");
+        }
+
+        booking.setState(BookingState.COMPLETED);
+        Booking saved = bookingRepository.save(booking);
+        writeAudit(tenantId, "BOOKING_COMPLETED", "bookingId=" + saved.getId());
         notificationService.bookingUpdated(saved);
         return saved;
     }
@@ -144,6 +213,12 @@ public class BookingService {
 
     public List<Booking> listTenantBookings() {
         return bookingRepository.findByTenantId(TenantContext.getRequired());
+    }
+
+    public List<Booking> listUserBookings(Authentication authentication) {
+        UUID userId = UUID.fromString((String) authentication.getPrincipal());
+        UUID tenantId = TenantContext.getRequired();
+        return bookingRepository.findActiveByUserIdAndTenantId(userId, tenantId);
     }
 
     public Booking getTenantBooking(UUID bookingId) {

@@ -8,5 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ListingRepository extends JpaRepository<Listing, UUID> {
     List<Listing> findByTenantIdAndActiveTrue(UUID tenantId);
+    List<Listing> findByTenantId(UUID tenantId);
     Optional<Listing> findByIdAndTenantId(UUID id, UUID tenantId);
 }

@@ -3,13 +3,13 @@ spring:
     name: platform-api
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/booking}
-    username: ${DB_USER:booking}
-    password: ${DB_PASSWORD:booking}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/booking_db}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:root}
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     open-in-view: false
     properties:
       hibernate:
@@ -23,7 +23,7 @@ spring:
       password: ${REDIS_PASSWORD:}
 
   flyway:
-    enabled: true
+    enabled: false
     baseline-on-migrate: false
     validate-on-migrate: true
     locations: classpath:db/migration
@@ -44,11 +44,11 @@ server:
 app:
   env: ${APP_ENV:local}
   jwt:
-    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET:titanium_booking_secure_key_32_chars_at_least}
     expiry-seconds: ${JWT_EXPIRY_SECONDS:7200}
     refresh-expiry-seconds: ${JWT_REFRESH_EXPIRY_SECONDS:1209600}
   webhook:
-    secret: ${WEBHOOK_SECRET}
+    secret: ${WEBHOOK_SECRET:dev_webhook_secret}
   cors:
     allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000}
 
@@ -63,6 +63,14 @@ integrations:
   sms:
     real:
       api-key: ${SMS_REAL_API_KEY:}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
 
 logging:
   pattern:

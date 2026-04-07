@@ -1,6 +1,5 @@
 package com.booking.platform.service;
 
-import com.booking.platform.domain.Booking;
 import com.booking.platform.domain.BookingState;
 import com.booking.platform.domain.Listing;
 import com.booking.platform.dto.ListingSearchResponse;
@@ -35,11 +34,14 @@ public class ListingService {
             .orElseThrow(() -> new NotFoundException("Listing not found"));
     }
 
-    public List<ListingSearchResponse> search(String locationQuery, double lat, double lon, double radiusKm, LocalDate checkIn, LocalDate checkOut) {
+    public List<ListingSearchResponse> search(String locationQuery, double lat, double lon, double radiusKm, Double minPrice, Double maxPrice, int guests, LocalDate checkIn, LocalDate checkOut) {
         UUID tenantId = TenantContext.getRequired();
         List<Listing> listings = listingRepository.findByTenantIdAndActiveTrue(tenantId).stream()
             .filter(l -> locationQuery == null || l.getLocation().toLowerCase().contains(locationQuery.toLowerCase()))
             .filter(l -> haversineKm(lat, lon, l.getLatitude(), l.getLongitude()) <= radiusKm)
+            .filter(l -> l.getMaxGuests() >= guests)
+            .filter(l -> minPrice == null || l.getBasePrice().doubleValue() >= minPrice)
+            .filter(l -> maxPrice == null || l.getBasePrice().doubleValue() <= maxPrice)
             .toList();
 
         return listings.stream()
@@ -55,10 +57,45 @@ public class ListingService {
                 listing.getTitle(),
                 listing.getLocation(),
                 listing.getBasePrice(),
+                listing.getMaxGuests(),
+                listing.getAmenities(),
+                listing.getImageUrls(),
                 checkIn,
                 checkOut
             ))
             .toList();
+    }
+
+    public Listing updateListing(UUID listingId, Listing updateData) {
+        UUID tenantId = TenantContext.getRequired();
+        Listing listing = listingRepository.findByIdAndTenantId(listingId, tenantId)
+            .orElseThrow(() -> new NotFoundException("Listing not found"));
+
+        listing.setTitle(updateData.getTitle());
+        listing.setDescription(updateData.getDescription());
+        listing.setLocation(updateData.getLocation());
+        listing.setLatitude(updateData.getLatitude());
+        listing.setLongitude(updateData.getLongitude());
+        listing.setBasePrice(updateData.getBasePrice());
+        listing.setMaxGuests(updateData.getMaxGuests());
+        listing.setAmenities(updateData.getAmenities());
+        listing.setImageUrls(updateData.getImageUrls());
+        listing.setActive(updateData.isActive());
+
+        return listingRepository.save(listing);
+    }
+
+    public void deleteListing(UUID listingId) {
+        UUID tenantId = TenantContext.getRequired();
+        Listing listing = listingRepository.findByIdAndTenantId(listingId, tenantId)
+            .orElseThrow(() -> new NotFoundException("Listing not found"));
+        
+        listingRepository.delete(listing);
+    }
+
+    public List<Listing> getListingsForVendor() {
+        UUID tenantId = TenantContext.getRequired();
+        return listingRepository.findByTenantId(tenantId);
     }
 
     private double haversineKm(double lat1, double lon1, double lat2, double lon2) {

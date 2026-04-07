@@ -10,14 +10,28 @@ import { cn } from "@/lib/utils";
 export default function SearchPage() {
   const [checkIn, setCheckIn] = useState("2026-03-01");
   const [checkOut, setCheckOut] = useState("2026-03-04");
+  const [guests, setGuests] = useState(2);
+  const [minPrice, setMinPrice] = useState<number>(0);
+  const [maxPrice, setMaxPrice] = useState<number>(1000);
   const [query, setQuery] = useState("beach");
   const [results, setResults] = useState<SearchItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   async function runSearch() {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ q: query, checkIn, checkOut, lat: "37.7749", lon: "-122.4194", radiusKm: "10000" });
+      const params = new URLSearchParams({ 
+        q: query, 
+        checkIn, 
+        checkOut, 
+        guests: guests.toString(),
+        minPrice: minPrice.toString(),
+        maxPrice: maxPrice.toString(),
+        lat: "37.7749", 
+        lon: "-122.4194", 
+        radiusKm: "10000" 
+      });
       const data = await apiFetch<SearchItem[]>(`/api/listings/search?${params.toString()}`);
       setResults(data || []);
     } catch (err) {
@@ -34,8 +48,8 @@ export default function SearchPage() {
         <p className="text-ink-muted">Discover curated listings from our global network of verified hosts.</p>
       </header>
 
-      <section className="rounded-2xl border border-border bg-surface-low p-1 shadow-2xl">
-        <div className="grid gap-2 p-1 md:grid-cols-4">
+      <section className="rounded-2xl border border-border bg-surface-low p-1 shadow-2xl transition-all">
+        <div className="grid gap-2 p-1 md:grid-cols-4 lg:grid-cols-5">
           <div className="relative">
             <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-muted" size={18} />
             <input 
@@ -65,14 +79,77 @@ export default function SearchPage() {
               onChange={(e) => setCheckOut(e.target.value)} 
             />
           </div>
-          <button 
-            className="group flex items-center justify-center gap-2 rounded-xl bg-accent px-6 py-4 text-sm font-bold text-canvas transition-all hover:scale-[1.02] active:scale-[0.98]" 
-            onClick={runSearch}
-          >
-            {loading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
-            Search Listings
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              className={cn(
+                "flex flex-1 items-center justify-center gap-2 rounded-xl border border-border px-4 py-4 text-sm font-medium transition-all hover:bg-surface-mid",
+                showFilters && "border-accent bg-accent/5 text-accent"
+              )}
+            >
+              Filters
+            </button>
+            <button 
+              className="group flex flex-[2] items-center justify-center gap-2 rounded-xl bg-accent px-6 py-4 text-sm font-bold text-canvas transition-all hover:scale-[1.02] active:scale-[0.98]" 
+              onClick={runSearch}
+            >
+              {loading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+              Search
+            </button>
+          </div>
         </div>
+
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden border-t border-border"
+            >
+              <div className="grid gap-6 p-6 md:grid-cols-3">
+                <div className="space-y-3">
+                   <label className="text-xs font-bold uppercase tracking-widest text-ink-muted">Guests</label>
+                   <div className="flex items-center gap-4">
+                      <button onClick={() => setGuests(Math.max(1, guests - 1))} className="h-10 w-10 rounded-full border border-border bg-surface-mid transition-all hover:bg-surface-high">-</button>
+                      <span className="font-display text-lg font-bold">{guests}</span>
+                      <button onClick={() => setGuests(guests + 1)} className="h-10 w-10 rounded-full border border-border bg-surface-mid transition-all hover:bg-surface-high">+</button>
+                   </div>
+                </div>
+                <div className="space-y-3">
+                   <label className="text-xs font-bold uppercase tracking-widest text-ink-muted">Price Range ($)</label>
+                   <div className="flex items-center gap-3">
+                      <input 
+                        type="number" 
+                        value={minPrice} 
+                        onChange={(e) => setMinPrice(Number(e.target.value))}
+                        className="w-full rounded-xl border border-border bg-surface-mid p-3 text-sm outline-none" 
+                        placeholder="Min"
+                      />
+                      <span className="text-ink-muted">&rsaquo;</span>
+                      <input 
+                        type="number" 
+                        value={maxPrice} 
+                        onChange={(e) => setMaxPrice(Number(e.target.value))}
+                        className="w-full rounded-xl border border-border bg-surface-mid p-3 text-sm outline-none" 
+                        placeholder="Max"
+                      />
+                   </div>
+                </div>
+                <div className="space-y-3">
+                   <label className="text-xs font-bold uppercase tracking-widest text-ink-muted">Property Amenities</label>
+                   <div className="flex flex-wrap gap-2">
+                      {["Wifi", "Pool", "Kitchen", "AC", "Parking"].map(a => (
+                        <button key={a} className="rounded-full border border-border bg-surface-mid px-3 py-1.5 text-xs font-medium transition-all hover:border-accent/40">
+                          {a}
+                        </button>
+                      ))}
+                   </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
 
       <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -113,6 +190,16 @@ export default function SearchPage() {
                     </div>
                   </div>
                   <h3 className="mt-2 font-display text-xl font-bold leading-tight line-clamp-1">{item.title}</h3>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="flex items-center gap-1 rounded-full bg-surface-mid px-2 py-0.5 text-[8px] font-bold uppercase text-ink-muted">
+                      {item.maxGuests} Guests
+                    </span>
+                    {item.amenities && item.amenities.split(",").slice(0, 2).map(a => (
+                      <span key={a} className="flex items-center gap-1 rounded-full bg-surface-mid px-2 py-0.5 text-[8px] font-bold uppercase text-ink-muted">
+                        {a.trim()}
+                      </span>
+                    ))}
+                  </div>
                   <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
                     <div>
                       <span className="text-xs text-ink-muted">Total for dates</span>

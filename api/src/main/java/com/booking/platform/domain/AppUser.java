@@ -40,6 +40,24 @@ public class AppUser {
     @Column(nullable = false)
     private Instant createdAt;
 
+    @Column(nullable = true)
+    private String firstName;
+
+    @Column(nullable = true)
+    private String lastName;
+
+    @Column(nullable = true)
+    private String phone;
+
+    @Column(length = 500)
+    private String profilePhotoUrl;
+
+    @Column
+    private boolean emailVerified = false;
+
+    @Column
+    private boolean phoneVerified = false;
+
     @PrePersist
     void prePersist() {
         if (id == null) {

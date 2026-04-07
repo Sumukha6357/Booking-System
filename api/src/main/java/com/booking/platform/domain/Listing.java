@@ -45,6 +45,24 @@ public class Listing {
     @Column(nullable = false)
     private boolean active = true;
 
+    @Column(nullable = false)
+    private int maxGuests = 2;
+
+    @Column(length = 1000)
+    private String amenities;
+
+    @Column(length = 2000)
+    private String imageUrls;
+
+    @Column(length = 2000)
+    private String checkInInstructions;
+
+    @Column(length = 1000)
+    private String houseRules;
+
+    @Column(length = 500)
+    private String pricingNotes;
+
     @Version
     private long version;
 
