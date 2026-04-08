@@ -3,9 +3,14 @@ package com.booking.platform.integration;
 import com.booking.platform.domain.Booking;
 import com.booking.platform.domain.BookingState;
 import com.booking.platform.domain.Listing;
+import com.booking.platform.domain.AppUser;
+import com.booking.platform.domain.Role;
+import com.booking.platform.domain.Tenant;
 import com.booking.platform.dto.HoldBookingRequest;
 import com.booking.platform.dto.HoldBookingResponse;
+import com.booking.platform.repository.AppUserRepository;
 import com.booking.platform.repository.ListingRepository;
+import com.booking.platform.repository.TenantRepository;
 import com.booking.platform.service.BookingService;
 import com.booking.platform.tenant.TenantContext;
 
@@ -38,6 +43,12 @@ class BookingFlowIntegrationTest {
     @Autowired
     private ListingRepository listingRepository;
 
+    @Autowired
+    private TenantRepository tenantRepository;
+
+    @Autowired
+    private AppUserRepository appUserRepository;
+
     private UUID tenantId;
     private UUID userId;
     private UUID listingId;
@@ -49,6 +60,20 @@ class BookingFlowIntegrationTest {
         userId = UUID.randomUUID();
         TenantContext.set(tenantId);
         testAuth = new UsernamePasswordAuthenticationToken(userId.toString(), "password");
+
+        Tenant tenant = new Tenant();
+        tenant.setId(tenantId);
+        tenant.setSlug("it-" + tenantId.toString().substring(0, 8));
+        tenant.setName("Integration Test Tenant");
+        tenantRepository.save(tenant);
+
+        AppUser user = new AppUser();
+        user.setId(userId);
+        user.setTenantId(tenantId);
+        user.setEmail("it+" + userId + "@example.test");
+        user.setPasswordHash("integration-test-password-hash");
+        user.setRole(Role.USER);
+        appUserRepository.save(user);
 
         // Create a listing to book against
         Listing listing = new Listing();
