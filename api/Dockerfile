@@ -12,13 +12,17 @@ COPY pom.xml ./pom.xml
 COPY src ./src
 RUN --mount=type=cache,target=/root/.m2 mvn -B -q -DskipTests package
 
-FROM eclipse-temurin:17-jre-alpine AS runtime
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+FROM eclipse-temurin:17-jre AS runtime
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl \
+  && rm -rf /var/lib/apt/lists/* \
+  && groupadd --system appgroup \
+  && useradd --system --gid appgroup --create-home appuser
 WORKDIR /app
 COPY --from=builder /workspace/target/*.jar /app/app.jar
 RUN chown -R appuser:appgroup /app
 USER appuser
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+  CMD curl --fail --silent http://localhost:8080/actuator/health || exit 1
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
