@@ -22,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -34,6 +35,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@TestPropertySource(properties = {
+    "spring.datasource.url=jdbc:h2:mem:bookingflowtest;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE",
+    "spring.datasource.username=sa",
+    "spring.datasource.password=",
+    "spring.datasource.driver-class-name=org.h2.Driver",
+    "spring.jpa.hibernate.ddl-auto=validate",
+    "spring.flyway.enabled=true",
+    "spring.flyway.validate-on-migrate=true",
+    "spring.flyway.baseline-on-migrate=false",
+    "spring.flyway.locations=classpath:db/migration",
+    "app.jwt.secret=test-secret-key-which-is-at-least-32-characters-long",
+    "app.webhook.secret=test-webhook-secret",
+    "spring.data.redis.host=localhost",
+    "spring.data.redis.port=6379"
+})
 @Transactional
 class BookingFlowIntegrationTest {
 
