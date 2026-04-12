@@ -3,14 +3,13 @@
 FROM maven:3.9-eclipse-temurin-17 AS deps
 WORKDIR /workspace
 COPY pom.xml ./pom.xml
-RUN --mount=type=cache,target=/root/.m2 mvn -B -q -DskipTests dependency:go-offline
+RUN --mount=type=cache,id=m2,target=/root/.m2 mvn -B -q -DskipTests dependency:go-offline
 
 FROM maven:3.9-eclipse-temurin-17 AS builder
 WORKDIR /workspace
-COPY --from=deps /root/.m2 /root/.m2
 COPY pom.xml ./pom.xml
 COPY src ./src
-RUN --mount=type=cache,target=/root/.m2 mvn -B -q -DskipTests package
+RUN --mount=type=cache,id=m2,target=/root/.m2 mvn -B -q -DskipTests package
 
 FROM eclipse-temurin:17-jre AS runtime
 RUN apt-get update \
